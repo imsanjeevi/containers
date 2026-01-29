@@ -95,6 +95,12 @@ spec:
               value: '29'
             - name: MQ_NATIVE_HA
               value: 'false'
+            - name: MQ_ENABLE_EMBEDDED_WEB_SERVER
+              value: 'true'
+            - name: MQ_WEB_FORCE_DEFAULT_TLS
+              value: 'true'
+            - name: MQ_WEB_HOME
+              value: "/run/mqweb"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
