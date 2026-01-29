@@ -71,7 +71,7 @@ amqsaem_r    amqsblst	amqsdlqc  amqsgbrc  amqsinq   amqsmon	amqsprmc  amqsputc  
 amqsapt      amqsblstc	amqsech   amqsget   amqsinqc  amqsmonc	amqspse   amqsqrm   amqssbx   amqssslc	amqswlm
 amqsaptc     amqscbf	amqsechc  amqsgetc  amqsiqm   amqsphac	amqsptl   amqsreq   amqssbxc  amqsstm	amqsxrm
 ```
-```
+```sh
 docker login http://172.27.8.7:8080
 Username: admin
 Password: 
@@ -83,3 +83,4 @@ docker build -t 172.27.8.7:8080/middleware/mq:v290126 -f Containerfile .
 
 #docker push 172.27.8.7:8080/middleware/REPOSITORY[:TAG]
 docker push 172.27.8.7:8080/middleware/mq:v290126
+```
