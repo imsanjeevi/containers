@@ -78,8 +78,6 @@ Password:
 
 #docker tag SOURCE_IMAGE[:TAG] 172.27.8.7:8080/middleware/REPOSITORY[:TAG]
 docker build -t 172.27.8.7:8080/middleware/mq:v290126 -f Containerfile .
-```
-
 
 #docker push 172.27.8.7:8080/middleware/REPOSITORY[:TAG]
 docker push 172.27.8.7:8080/middleware/mq:v290126
