@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ibmmqs
+  namespace: middleware
+  labels:
+    app.kubernetes.io/component: integration
+    app.kubernetes.io/instance: ibmmqs
+    app.kubernetes.io/name: ibm-mq
+    app.kubernetes.io/version: 9.4.4.1
+    app: ibmmqs
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: integration
+      app.kubernetes.io/instance: ibmmqs
+      app.kubernetes.io/name: ibm-mq
+      app: ibmmqs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: integration
+        app.kubernetes.io/instance: ibmmqs
+        app.kubernetes.io/name: ibm-mq
+        app.kubernetes.io/version: 9.4.4.1
+        statefulSetName: ibmmqs
+        app: ibmmqs
+      # annotations:
+      #   productChargedContainers: qmgr
+      #   productID: 208423bb063c43288328b1d788745b0c
+      #   productMetric: PROCESSOR_VALUE_UNIT
+      #   productName: IBM MQ Advanced
+      #   productVersion: 9.4.4.1
+    spec:
+      restartPolicy: Always
+      # serviceAccountName: ibmmqs
+      terminationGracePeriodSeconds: 30
+      securityContext: {}
+      containers:
+        - name: qmgr
+          resources: {}
+            # limits:
+            #   cpu: '1'
+            #   memory: 1Gi
+            # requests:
+            #   cpu: '1'
+            #   memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - chkmqready
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 1
+          terminationMessagePath: /run/termination-log
+          livenessProbe:
+            exec:
+              command:
+                - chkmqhealthy
+            initialDelaySeconds: 90
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 1
+          env:
+            - name: LICENSE
+              # value: view
+              value: "accept"
+            - name: MQ_QMGR_NAME
+              value: QM1
+            - name: MQ_ADMIN_PASSWORD
+              value: "passw0rd"
+            - name: MQ_MULTI_INSTANCE
+              value: 'true'
+            - name: MQ_ENABLE_METRICS
+              value: 'true'
+            # - name: MQ_ENABLE_EMBEDDED_WEB_SERVER
+            #   value: 'false'
+            - name: MQ_LOGGING_CONSOLE_FORMAT
+              value: basic
+            - name: DEBUG
+              value: 'false'
+            - name: MQ_ENABLE_TRACE_STRMQM
+              value: 'false'
+            - name: MQ_EPHEMERAL_PREFIX
+              value: /run/mqm
+            - name: MQ_GRACE_PERIOD
+              value: '29'
+            - name: MQ_NATIVE_HA
+              value: 'false'
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+          ports:
+            - containerPort: 1414
+              protocol: TCP
+            - containerPort: 9157
+              protocol: TCP
+            - containerPort: 9443
+              protocol: TCP
+          terminationMessagePolicy: File
+          # image: cp.icr.io/cp/ibm-mqadvanced-server:9.4.1.0-r1
+          image: icr.io/ibm-messaging/mq:latest
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+          - name: mqdata
+            mountPath: /mnt/mqm
+          - name: mqlog
+            mountPath: /mnt/mqm-log
+          - name: mqcwd
+            mountPath: /mnt/mqm-data
+      volumes:
+      - name: mqdata
+        persistentVolumeClaim:
+          claimName: ibmmqs-shared-pvc
+      - name: mqlog
+        persistentVolumeClaim:
+          claimName: ibmmqs-log-pvc
+      - name: mqcwd
+        persistentVolumeClaim:
+          claimName: ibmmqs-cwd-pvc
+      # serviceAccount: ibmmqs
+      dnsPolicy: ClusterFirst
+  serviceName: qm
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: OnDelete
