@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+FROM icr.io/ibm-messaging/mq:latest
+
+# Switch to root to install packages
+USER 0
+
+# Install nslookup (bind-utils) and clean up cache to keep image small
+RUN microdnf install -y bind-utils \
+    && microdnf clean all \
+    && rm -rf /var/cache/*
+
+# (Optional) sanity check layer - remove if you want a cleaner image history
+# RUN nslookup -version || true
+
+# Switch back to the default MQ user for runtime safety
+USER 1001
