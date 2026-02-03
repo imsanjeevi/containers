@@ -14,7 +14,6 @@ spec:
     whenDeleted: Retain
     whenScaled: Retain
   replicas: 2
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app.kubernetes.io/component: integration
@@ -76,10 +75,10 @@ spec:
             - name: MQ_QMGR_NAME
               value: QM1
             - name: MQ_ADMIN_PASSWORD
-              value: "passw0rd"
-            - name: MQ_MULTI_INSTANCE
-              value: 'true'
+              value: "Password@123"
             - name: MQ_ENABLE_METRICS
+              value: 'true'
+            - name: MQ_MULTI_INSTANCE
               value: 'true'
             # - name: MQ_ENABLE_EMBEDDED_WEB_SERVER
             #   value: 'false'
@@ -95,20 +94,6 @@ spec:
               value: '29'
             - name: MQ_NATIVE_HA
               value: 'false'
-            - name: MQ_ENABLE_EMBEDDED_WEB_SERVER
-              value: 'true'
-            - name: MQ_WEB_FORCE_DEFAULT_TLS
-              value: 'true'
-            - name: MQ_WEB_HOME
-              value: "/run/mqweb"
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            privileged: false
-            runAsNonRoot: true
-            readOnlyRootFilesystem: false
           ports:
             - containerPort: 1414
               protocol: TCP
@@ -121,22 +106,22 @@ spec:
           image: icr.io/ibm-messaging/mq:latest
           imagePullPolicy: IfNotPresent
           volumeMounts:
-          - name: mqdata
+          - name: mqmqm
             mountPath: /mnt/mqm
           - name: mqlog
             mountPath: /mnt/mqm-log
-          - name: mqcwd
+          - name: mqdata
             mountPath: /mnt/mqm-data
       volumes:
-      - name: mqdata
+      - name: mqmqm
         persistentVolumeClaim:
-          claimName: ibmmqs-shared-pvc
+          claimName: ibmmqs-mqm-pvc
       - name: mqlog
         persistentVolumeClaim:
           claimName: ibmmqs-log-pvc
-      - name: mqcwd
+      - name: mqdata
         persistentVolumeClaim:
-          claimName: ibmmqs-cwd-pvc
+          claimName: ibmmqs-data-pvc
       # serviceAccount: ibmmqs
       dnsPolicy: ClusterFirst
   serviceName: qm
